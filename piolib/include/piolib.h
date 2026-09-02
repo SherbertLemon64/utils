@@ -65,6 +65,15 @@ enum pio_xfer_dir {
     PIO_DIR_COUNT
 };
 
+enum pio_sm_flags {
+    PIO_SM_FLAG_TXSTALL = 0x0001,
+    PIO_SM_FLAG_RXSTALL = 0x0002,
+    PIO_SM_FLAG_TXOVER  = 0x0004,
+    PIO_SM_FLAG_RXUNDER = 0x0008,
+
+    PIO_SM_FLAG_ALL     = 0x000f,
+};
+
 #ifndef PIOLIB_INTERNALS
 
 enum pio_instr_bits {
