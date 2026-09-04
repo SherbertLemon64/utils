@@ -59,12 +59,14 @@ class SPI_PARAMS(Enum):
     CPHA: Param = Param(default=1, allowed_values=(1, 2))
     CSPOL: Param = Param(default=1, allowed_values=(1, 2))
     FREQ: Param = Param(default=25000000)
+    PORT: Param = Param(default=0)
 
 class I2C_PARAMS(Enum):
     SDA: Param = Param(default=2, allowed_values=(2,))
     SCL: Param = Param(default=3, allowed_values=(3,))
     ADDR: Param = Param(default=0xFF)
     FREQ: Param = Param(default=100000)
+    PORT: Param = Param(default=1)
 
 class State:
     lines: str
@@ -316,7 +318,7 @@ class Define(Instruction):
                 print(f"Didn't specify nessercary param {p.name} in {self.__class__.__name__} on in file {self.file_name} on line {self.start_line}, defaulting to {p.value.default}")
                 values[p.name] = p.value.default
             elif p.name in values.keys() and not p.value.check(values[p.name]):
-                raise ValueError(f"{p.name} cannot be set to {values[p.name]}, the only valid options are {", ".join(str(v) for v in p.value.allowed_values)}")
+                print(f"{p.name} set to {values[p.name]}, the options are {", ".join(str(v) for v in p.value.allowed_values)} are you sure?")
             elif p.name not in values.keys() and p.value.default is None:
                 values[p.name] = 0xFF
 
@@ -331,7 +333,8 @@ class Define(Instruction):
             packed += values["FREQ"].to_bytes(4, byteorder='little')
 
         arr_ptr.append(len(packed))
-        arr_ptr.extend(b'\x00\x00\x00')  # reserved (struct padding after param_len)
+        arr_ptr.append(values["PORT"] & 0xff)
+        arr_ptr.extend(b'\x00\x00')  # reserved (struct padding after param_len)
         arr_ptr.extend(packed)
 
 class Delay(Instruction):
@@ -593,7 +596,7 @@ def pretty_print(data):
 def make_file(input_file):
     buf = bytearray()
     buf.extend(MAGIC) # magic
-    buf.append(1) # version
+    buf.append(2) # version
 
     buf.extend(compile_file(input_file))
 
