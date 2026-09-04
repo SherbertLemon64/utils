@@ -38,7 +38,6 @@ The syntax is as follows:
 ```bnf
 <define>        ::= "define" <command-name> <protocol> <params>
     <protocol>  ::= "spi" | "i2c"
-    
 
 <command>       ::= <command-name> <params> <opt-data>
     <opt-data>  ::= <data> <opt-data> | <data>
@@ -48,7 +47,6 @@ The syntax is as follows:
 <delay>  ::= "delay" <params> <int>
 
 <import> ::= "import" <filename>
-
 
 <params>  ::= "[" <key> <value> "]" | "[" <flag> "]"
 <data>    ::= <hex-value> | <const-name>
@@ -85,16 +83,12 @@ What are valid params for each instruction are better defined in the binary docs
         0x01  SETUP
         0x10  COMMAND
 
-
-
 -----------------------------------------------------------------------
                        2. DELAY (0x00) - 5 bytes
-
 
    +-+-+-+-+-+-+-+-+
    |  Opcode 0x00  |
    +-+-+-+-+-+-+-+-+
-
 
     0               1               2               3
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -104,16 +98,12 @@ What are valid params for each instruction are better defined in the binary docs
     Delay : microseconds to wait (source [US]/[MS]/[S]
             units are multiplied out by the assembler)
 
-
-
 -----------------------------------------------------------------------
          3. DEFINE (0x01) - 9-byte header + #Size Parameters
-
 
    +-+-+-+-+-+-+-+-+
    |  Opcode 0x01  |
    +-+-+-+-+-+-+-+-+
-
 
     0               1               2               3
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -131,8 +121,8 @@ What are valid params for each instruction are better defined in the binary docs
                This is unique to a four cc and file version
     Reserved : three pad bytes (struct alignment after Size), always 0x00
 
-    Defines are implicitly numbered: the index used later by 
-    COMMAND's "Out idx" field is just the order in which DEFINE 
+    Defines are implicitly numbered: the index used later by
+    COMMAND's "Out idx" field is just the order in which DEFINE
     instructions appear in the stream (0, 1, 2, ...).
 
     The shape of the N-byte param block depends on Protocol:
@@ -168,12 +158,9 @@ What are valid params for each instruction are better defined in the binary docs
     CPHA       : clock phase, if 1 the clock transitions in the
                  middle of bits, if 2, the data transitions are in
                  phase with the clock
-    
-
 
 -----------------------------------------------------------------------
             4. COMMAND (0x10) - 5-byte header + #Size data
-
 
     +-+-+-+-+-+-+-+-+
     |  Opcode 0x10  |
@@ -217,13 +204,14 @@ What are valid params for each instruction are better defined in the binary docs
     bit 7 (S), SWALLOW_ERRORS  : If this is 1 then we don't end
                                  the splash on a transaction error
                                  (mainly caused by nacked i2c)
+
 -----------------------------------------------------------------------
 ```
 *(inspired by https://www.ietf.org/rfc/rfc793.html)*
 
 ## Limitations
 
-- This is currently incompatible with the Pi 5
+- This is currently incompatible with the Pi 5 family
 - You can have a maximum of 4 SPI defines
 - You can have a maximum of 10 I2C defines
 - The delays are blocking and therefore a long splash description will slow down a boot
