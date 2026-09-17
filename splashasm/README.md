@@ -122,7 +122,7 @@ What are valid params for each instruction are better defined in the binary docs
     Port     : Sets the output block we will be writing to, this
                needs to be in agreement with the pins to get an
                output. Not relevant for Pis earlier than the Pi 5
-    Reserved : three pad bytes (struct alignment after Size), always 
+    Reserved : two pad bytes (struct alignment after Size), always
                0x00
 
     Defines are implicitly numbered: the index used later by

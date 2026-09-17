@@ -17,6 +17,7 @@ import sys
 
 FILE_DIR = ""
 MAGIC = b'SPLASH ASM\x00\x00\x00\x00\x00'
+version = 1
 
 class WireProtocols(Enum):
     I2C = "i2c"
@@ -299,6 +300,7 @@ class Define(Instruction):
         return define
 
     def _do_emit_binary(self, state, arr_ptr):
+        global version
         arr_ptr.extend(Instructions.DEFINE.value)
 
         arr_ptr.extend(bytearray("SPI " if self.protocol_type == WireProtocols.SPI else "I2C ", 'ascii'))
@@ -315,7 +317,7 @@ class Define(Instruction):
 
         for p in default_params:
             if p.name not in values.keys() and p.value.default is not None:
-                print(f"Didn't specify nessercary param {p.name} in {self.__class__.__name__} on in file {self.file_name} on line {self.start_line}, defaulting to {p.value.default}")
+                print(f"Didn't specify necessary param {p.name} in {self.__class__.__name__} in file {self.file_name} on line {self.start_line}, defaulting to {p.value.default}")
                 values[p.name] = p.value.default
             elif p.name in values.keys() and not p.value.check(values[p.name]):
                 print(f"{p.name} set to {values[p.name]}, the options are {", ".join(str(v) for v in p.value.allowed_values)} are you sure?")
@@ -328,9 +330,13 @@ class Define(Instruction):
                              values["DC"], values["CPOL"],
                              values["CPHA"], values["CSPOL"]])
             packed += values["FREQ"].to_bytes(4, byteorder='little')
+            if values["PORT"] != 0:
+                version = max(version, 2)
         else:
             packed = bytes([values["SDA"], values["SCL"], values["ADDR"], 0])
             packed += values["FREQ"].to_bytes(4, byteorder='little')
+            if values["PORT"] != 1:
+                version = max(version, 2)
 
         arr_ptr.append(len(packed))
         arr_ptr.append(values["PORT"] & 0xff)
@@ -594,11 +600,12 @@ def pretty_print(data):
     return '\n'.join(lines)
 
 def make_file(input_file):
+    body = compile_file(input_file)
     buf = bytearray()
-    buf.extend(MAGIC) # magic
-    buf.append(2) # version
+    buf.extend(MAGIC)
+    buf.append(version)
 
-    buf.extend(compile_file(input_file))
+    buf.extend(body)
 
     return buf
 
